@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Current Location</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Current Location</h1>
+    
+    <div class="debug-section">
+        <h3>1. Test Current Location Button</h3>
+        <div id="currentLocationStatus" class="status info">Click "Use Current Location" to test</div>
+        <button onclick="testCurrentLocationButton()">📍 Use Current Location</button>
+        <input type="text" id="pickupInput" placeholder="Pickup location will appear here" readonly>
+    </div>
+
+    <div class="debug-section">
+        <h3>2. Test Direct Geocoding</h3>
+        <div id="directGeocodingStatus" class="status info">Click "Test Direct Geocoding" to test</div>
+        <button onclick="testDirectGeocoding()">Test Direct Geocoding</button>
+    </div>
+
+    <div class="debug-section">
+        <h3>3. Console Log</h3>
+        <div id="consoleLog" class="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        // Override console.log to show in our log div
+        const originalLog = console.log;
+        const originalError = console.error;
+        const logDiv = document.getElementById('consoleLog');
+        
+        function addToLog(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? 'red' : 'black';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToLog(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToLog(args.join(' '), 'error');
+        };
+
+        let geocoder = null;
+
+        // Initialize geocoder when Google Maps loads
+        function initGeocoder() {
+            if (window.google && window.google.maps) {
+                geocoder = new google.maps.Geocoder();
+                console.log('✅ Geocoder initialized');
+            } else {
+                console.error('❌ Google Maps not available');
+            }
+        }
+
+        // Test the current location button functionality
+        async function testCurrentLocationButton() {
+            const status = document.getElementById('currentLocationStatus');
+            const pickupInput = document.getElementById('pickupInput');
+            
+            console.log('=== TESTING CURRENT LOCATION BUTTON ===');
+            
+            if (!navigator.geolocation) {
+                status.className = 'status error';
+                status.textContent = '❌ Geolocation not supported';
+                return;
+            }
+
+            status.className = 'status info';
+            status.textContent = '📍 Getting current location...';
+
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    });
+                });
+
+                const coords = position.coords;
+                console.log('✅ Location obtained:', coords);
+
+                status.className = 'status success';
+                status.innerHTML = `
+                    ✅ Location obtained!<br>
+                    <strong>Coordinates:</strong> ${coords.latitude}, ${coords.longitude}<br>
+                    <strong>Accuracy:</strong> ${coords.accuracy}m<br>
+                    <strong>Getting address...</strong>
+                `;
+
+                // Test reverse geocoding
+                if (!geocoder) {
+                    initGeocoder();
+                }
+
+                if (geocoder) {
+                    const userLatLng = new google.maps.LatLng(coords.latitude, coords.longitude);
+                    
+                    try {
+                        const result = await new Promise((resolve, reject) => {
+                            geocoder.geocode({ location: userLatLng }, (results, geocodeStatus) => {
+                                if (geocodeStatus === 'OK' && results[0]) {
+                                    resolve(results[0]);
+                                } else {
+                                    reject(new Error(`Geocoding failed: ${geocodeStatus}`));
+                                }
+                            });
+                        });
+
+                        console.log('✅ Geocoding result:', result);
+
+                        // Extract address components
+                        let streetNumber = '';
+                        let route = '';
+                        let sublocality = '';
+                        let locality = '';
+                        let administrativeArea = '';
+                        let country = '';
+
+                        for (let component of result.address_components) {
+                            if (component.types.includes('street_number')) {
+                                streetNumber = component.long_name;
+                            } else if (component.types.includes('route')) {
+                                route = component.long_name;
+                            } else if (component.types.includes('sublocality') || component.types.includes('sublocality_level_1')) {
+                                sublocality = component.long_name;
+                            } else if (component.types.includes('locality')) {
+                                locality = component.long_name;
+                            } else if (component.types.includes('administrative_area_level_1')) {
+                                administrativeArea = component.long_name;
+                            } else if (component.types.includes('country')) {
+                                country = component.long_name;
+                            }
+                        }
+
+                        // Build readable address
+                        let addressParts = [];
+                        if (streetNumber && route) {
+                            addressParts.push(`${streetNumber} ${route}`);
+                        } else if (route) {
+                            addressParts.push(route);
+                        }
+                        if (sublocality && !addressParts.includes(sublocality)) {
+                            addressParts.push(sublocality);
+                        }
+                        if (locality && !addressParts.includes(locality)) {
+                            addressParts.push(locality);
+                        }
+                        if (administrativeArea && !addressParts.includes(administrativeArea)) {
+                            addressParts.push(administrativeArea);
+                        }
+
+                        const readableAddress = addressParts.length > 0 ? addressParts.join(', ') : result.formatted_address;
+
+                        // Update pickup input
+                        pickupInput.value = readableAddress;
+                        
+                        status.innerHTML = `
+                            ✅ Address found!<br>
+                            <strong>Address:</strong> ${readableAddress}<br>
+                            <strong>Country:</strong> ${country}<br>
+                            <strong>City:</strong> ${locality}<br>
+                            <strong>State:</strong> ${administrativeArea}
+                        `;
+
+                        console.log('✅ Address set in pickup input:', readableAddress);
+
+                    } catch (geocodeError) {
+                        console.error('❌ Geocoding failed:', geocodeError);
+                        const fallbackName = `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`;
+                        pickupInput.value = fallbackName;
+                        
+                        status.className = 'status error';
+                        status.textContent = `❌ Geocoding failed: ${geocodeError.message}. Using coordinates.`;
+                    }
+                } else {
+                    console.error('❌ Geocoder not available');
+                    pickupInput.value = 'Geocoder not available';
+                    status.className = 'status error';
+                    status.textContent = '❌ Geocoder not available';
+                }
+
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Location error: ${error.message}`;
+                console.error('Location error:', error);
+            }
+        }
+
+        // Test direct geocoding
+        async function testDirectGeocoding() {
+            const status = document.getElementById('directGeocodingStatus');
+            
+            console.log('=== TESTING DIRECT GEOCODING ===');
+            
+            if (!geocoder) {
+                initGeocoder();
+            }
+
+            if (!geocoder) {
+                status.className = 'status error';
+                status.textContent = '❌ Geocoder not available';
+                return;
+            }
+
+            // Test with Hyderabad coordinates
+            const testLat = 17.3850;
+            const testLng = 78.4867;
+            
+            status.className = 'status info';
+            status.textContent = `Testing geocoding for Hyderabad (${testLat}, ${testLng})...`;
+
+            try {
+                const position = new google.maps.LatLng(testLat, testLng);
+                const result = await new Promise((resolve, reject) => {
+                    geocoder.geocode({ location: position }, (results, geocodeStatus) => {
+                        if (geocodeStatus === 'OK' && results[0]) {
+                            resolve(results[0]);
+                        } else {
+                            reject(new Error(`Geocoding failed: ${geocodeStatus}`));
+                        }
+                    });
+                });
+
+                console.log('✅ Direct geocoding result:', result);
+
+                status.className = 'status success';
+                status.innerHTML = `
+                    ✅ Direct geocoding successful!<br>
+                    <strong>Formatted Address:</strong> ${result.formatted_address}<br>
+                    <strong>Place ID:</strong> ${result.place_id}
+                `;
+
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Direct geocoding failed: ${error.message}`;
+                console.error('Direct geocoding error:', error);
+            }
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = '';
+        }
+
+        // Initialize when page loads
+        window.onload = function() {
+            console.log('Debug current location page loaded');
+            
+            // Initialize geocoder when Google Maps loads
+            if (window.google && window.google.maps) {
+                initGeocoder();
+            } else {
+                // Wait for Google Maps to load
+                const checkGoogleMaps = setInterval(() => {
+                    if (window.google && window.google.maps) {
+                        initGeocoder();
+                        clearInterval(checkGoogleMaps);
+                    }
+                }, 100);
+            }
+        };
+    </script>
+    
+    <!-- Load Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB6-shv9yZ-TePQmbXUTiewlRUIe2Y-AAo&libraries=places" async defer></script>
+</body>
+</html> 

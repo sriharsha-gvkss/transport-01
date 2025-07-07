@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Autocomplete - Bike Taxi</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB6-shv9yZ-TePQmbXUTiewlRUIe2Y-AAo&libraries=places" async defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .input-container {
+            position: relative;
+            margin: 20px 0;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .autocomplete-item {
+            padding: 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+        .autocomplete-item:hover {
+            background: #f8f9fa;
+        }
+        .autocomplete-item.selected {
+            background: #007bff;
+            color: white;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            border-left-color: #28a745;
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border-left-color: #dc3545;
+        }
+        .test-buttons {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .test-btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .test-btn:hover {
+            background: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+        .clear-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .clear-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Google Places Autocomplete</h1>
+        <p>This page tests if the Google Places API and autocomplete functionality are working properly.</p>
+        
+        <div class="status" id="status">Loading Google Maps API...</div>
+        
+        <div class="test-buttons">
+            <button class="test-btn" onclick="testAutocomplete()">Test Autocomplete</button>
+            <button class="test-btn" onclick="clearResults()">Clear Results</button>
+            <button class="clear-btn" onclick="clearCache()">Clear Browser Cache</button>
+        </div>
+        
+        <h2>Test Pickup Location</h2>
+        <div class="input-container">
+            <input type="text" id="pickupInput" placeholder="Type a location (e.g., Hyderabad, Bangalore)">
+            <div id="pickupAutocomplete" class="autocomplete-dropdown"></div>
+        </div>
+        
+        <h2>Test Destination</h2>
+        <div class="input-container">
+            <input type="text" id="destinationInput" placeholder="Type a location (e.g., Mumbai, Delhi)">
+            <div id="destinationAutocomplete" class="autocomplete-dropdown"></div>
+        </div>
+        
+        <div class="results" id="results" style="display: none;">
+            <h3>Selected Locations:</h3>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        let map, geocoder;
+        
+        function initMap() {
+            console.log('Google Maps API loaded');
+            document.getElementById('status').innerHTML = '✅ Google Maps API loaded successfully!';
+            document.getElementById('status').className = 'status success';
+            
+            // Initialize services
+            geocoder = new google.maps.Geocoder();
+            
+            // Setup autocomplete for both inputs
+            setupAutocomplete('pickupInput', 'pickup');
+            setupAutocomplete('destinationInput', 'destination');
+        }
+        
+        function setupAutocomplete(inputId, type) {
+            const input = document.getElementById(inputId);
+            let debounceTimer;
+            
+            input.addEventListener('input', function(e) {
+                const query = e.target.value.trim();
+                console.log('Input:', query);
+                
+                clearTimeout(debounceTimer);
+                
+                if (!query || query.length < 2) {
+                    hideAutocomplete(type);
+                    return;
+                }
+                
+                debounceTimer = setTimeout(() => {
+                    getPlacePredictions(query, type);
+                }, 200);
+            });
+            
+            input.addEventListener('blur', function() {
+                setTimeout(() => hideAutocomplete(type), 150);
+            });
+        }
+        
+        function getPlacePredictions(input, type) {
+            console.log('Getting predictions for:', input, type);
+            
+            if (!window.google || !window.google.maps || !window.google.maps.places) {
+                console.error('Google Maps Places API not loaded');
+                return;
+            }
+            
+            const service = new google.maps.places.AutocompleteService();
+            
+            service.getPlacePredictions({
+                input: input,
+                componentRestrictions: { country: 'in' },
+                types: ['geocode']
+            }, function(predictions, status) {
+                console.log('Predictions:', predictions, 'Status:', status);
+                
+                if (status === google.maps.places.PlacesServiceStatus.OK && predictions && predictions.length > 0) {
+                    displayAutocompleteResults(predictions, type);
+                } else {
+                    hideAutocomplete(type);
+                    console.log('No predictions found:', status);
+                }
+            });
+        }
+        
+        function displayAutocompleteResults(predictions, type) {
+            const dropdown = document.getElementById(type + 'Autocomplete');
+            dropdown.innerHTML = '';
+            
+            predictions.forEach((prediction, index) => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.textContent = prediction.description;
+                
+                item.addEventListener('click', function() {
+                    selectAutocompleteItem(prediction, type);
+                });
+                
+                dropdown.appendChild(item);
+            });
+            
+            dropdown.style.display = 'block';
+        }
+        
+        function selectAutocompleteItem(prediction, type) {
+            const input = document.getElementById(type === 'pickup' ? 'pickupInput' : 'destinationInput');
+            input.value = prediction.description;
+            
+            hideAutocomplete(type);
+            
+            // Show selected result
+            const results = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+            results.style.display = 'block';
+            resultsContent.innerHTML += `<p><strong>${type}:</strong> ${prediction.description}</p>`;
+            
+            console.log('Selected:', prediction);
+        }
+        
+        function hideAutocomplete(type) {
+            const dropdown = document.getElementById(type + 'Autocomplete');
+            dropdown.style.display = 'none';
+        }
+        
+        function testAutocomplete() {
+            console.log('=== TEST AUTOCOMPLETE ===');
+            
+            if (!window.google || !window.google.maps || !window.google.maps.places) {
+                console.error('❌ Google Maps Places API not loaded');
+                showMessage('Google Maps API not loaded. Please refresh the page.', 'error');
+                return;
+            }
+            
+            console.log('✅ Google Maps Places API is loaded');
+            
+            try {
+                const service = new google.maps.places.AutocompleteService();
+                console.log('✅ AutocompleteService created successfully');
+                
+                service.getPlacePredictions({
+                    input: 'Hyderabad',
+                    componentRestrictions: { country: 'in' }
+                }, function(predictions, status) {
+                    console.log('Test predictions:', predictions);
+                    console.log('Test status:', status);
+                    
+                    if (status === google.maps.places.PlacesServiceStatus.OK && predictions && predictions.length > 0) {
+                        console.log('✅ Autocomplete is working! Found', predictions.length, 'predictions');
+                        showMessage('Autocomplete is working! Try typing in the location fields.', 'success');
+                    } else {
+                        console.log('❌ No predictions found:', status);
+                        showMessage('Autocomplete test failed. Please check your internet connection.', 'error');
+                    }
+                });
+            } catch (error) {
+                console.error('❌ Error testing autocomplete:', error);
+                showMessage('Error testing autocomplete. Please refresh the page.', 'error');
+            }
+        }
+        
+        function showMessage(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('resultsContent').innerHTML = '';
+            document.getElementById('pickupInput').value = '';
+            document.getElementById('destinationInput').value = '';
+        }
+        
+        function clearCache() {
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                });
+            }
+            localStorage.clear();
+            sessionStorage.clear();
+            showMessage('Browser cache cleared! Please refresh the page.', 'success');
+        }
+        
+        // Initialize when API loads
+        window.initMap = initMap;
+    </script>
+</body>
+</html> 

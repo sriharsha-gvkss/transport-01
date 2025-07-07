@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Username Test</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        .username-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #007bff;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Driver Username Test</h1>
+        
+        <div class="section">
+            <h2>Current Session Status</h2>
+            <div id="sessionStatus"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Driver Username Display Test</h2>
+            <div class="test-result">
+                <strong>Expected Elements:</strong><br>
+                • <code>.driver-name</code> - Should show driver username<br>
+                • <code>.welcome-message</code> - Should show "Welcome, [username]!"
+            </div>
+            <div id="usernameTest"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Quick Actions</h2>
+            <button class="btn" onclick="createTestDriver()">Create Test Driver Session</button>
+            <button class="btn" onclick="clearSession()">Clear Session</button>
+            <button class="btn" onclick="testUsernameDisplay()">Test Username Display</button>
+            <button class="btn btn-success" onclick="openDriverSimulator()">Open Driver Simulator</button>
+        </div>
+        
+        <div class="section">
+            <h2>Test Results</h2>
+            <div id="testResults"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Manual Test Steps</h2>
+            <ol>
+                <li>Click "Create Test Driver Session" to set up authentication</li>
+                <li>Click "Open Driver Simulator" to go to the simulator</li>
+                <li>Check if the driver name appears in the header</li>
+                <li>Check if the welcome message shows the correct username</li>
+                <li>Use "Test Username Display" to verify the elements</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const logEntry = document.createElement('div');
+            logEntry.className = `status ${type}`;
+            logEntry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(logEntry);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function checkSession() {
+            const sessionToken = localStorage.getItem('sessionToken');
+            const currentUser = localStorage.getItem('currentUser');
+            
+            const statusDiv = document.getElementById('sessionStatus');
+            let statusHtml = '';
+            
+            if (sessionToken) {
+                statusHtml += '<div class="status success">✅ Session Token: Present</div>';
+                log('Session token found', 'success');
+            } else {
+                statusHtml += '<div class="status error">❌ Session Token: Missing</div>';
+                log('Session token missing', 'error');
+            }
+            
+            if (currentUser) {
+                try {
+                    const user = JSON.parse(currentUser);
+                    statusHtml += `<div class="status success">✅ User Data: Present (${user.username} - ${user.role})</div>`;
+                    log(`User data found: ${user.username} (${user.role})`, 'success');
+                    
+                    // Show username display
+                    const usernameDiv = document.getElementById('usernameTest');
+                    usernameDiv.innerHTML = `
+                        <div class="username-display">
+                            <strong>Current Driver:</strong> ${user.username}<br>
+                            <strong>Role:</strong> ${user.role}<br>
+                            <strong>Email:</strong> ${user.email || 'N/A'}
+                        </div>
+                    `;
+                } catch (error) {
+                    statusHtml += '<div class="status error">❌ User Data: Corrupted</div>';
+                    log('User data corrupted', 'error');
+                }
+            } else {
+                statusHtml += '<div class="status error">❌ User Data: Missing</div>';
+                log('User data missing', 'error');
+            }
+            
+            statusDiv.innerHTML = statusHtml;
+        }
+
+        function createTestDriver() {
+            log('Creating test driver session...', 'info');
+            
+            const testUser = {
+                username: 'testdriver123',
+                email: 'test@driver.com',
+                role: 'DRIVER',
+                phoneNumber: '+1234567890',
+                vehicleType: 'BIKE',
+                licenseNumber: 'TEST123'
+            };
+            
+            const testToken = 'test-session-token-' + Date.now();
+            
+            localStorage.setItem('sessionToken', testToken);
+            localStorage.setItem('currentUser', JSON.stringify(testUser));
+            sessionStorage.removeItem('redirectCount');
+            
+            log('Test driver session created successfully', 'success');
+            checkSession();
+        }
+
+        function clearSession() {
+            if (confirm('Are you sure you want to clear the session?')) {
+                log('Clearing session...', 'warning');
+                localStorage.clear();
+                sessionStorage.clear();
+                log('Session cleared', 'success');
+                checkSession();
+                document.getElementById('usernameTest').innerHTML = '';
+            }
+        }
+
+        function testUsernameDisplay() {
+            log('Testing username display elements...', 'info');
+            
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                log('No user session found', 'error');
+                return;
+            }
+            
+            try {
+                const user = JSON.parse(currentUser);
+                log(`Testing display for user: ${user.username}`, 'info');
+                
+                // Simulate what the driver simulator should show
+                const expectedDriverName = user.username;
+                const expectedWelcomeMessage = `Welcome, ${user.username}!`;
+                
+                log(`Expected .driver-name: "${expectedDriverName}"`, 'success');
+                log(`Expected .welcome-message: "${expectedWelcomeMessage}"`, 'success');
+                
+                // Check if these elements would be found in the simulator
+                log('Note: These elements should be visible in the driver simulator header', 'info');
+                
+            } catch (error) {
+                log('Error parsing user data', 'error');
+            }
+        }
+
+        function openDriverSimulator() {
+            log('Opening driver simulator...', 'info');
+            window.open('http://localhost:8083/', '_blank');
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            log('Driver username test page loaded', 'info');
+            checkSession();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,110 @@
+.driver-simulator {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px 0;
+}
+
+.MuiCard-root {
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+.MuiTypography-h3 {
+  color: white !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  font-weight: 700 !important;
+}
+
+.driver-marker {
+  background: transparent !important;
+}
+
+.leaflet-popup-content {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom scrollbar for logs */
+.logs-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.logs-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.logs-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.logs-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Animation for status indicators */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.MuiCard-root {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .driver-simulator {
+    padding: 10px;
+  }
+  
+  .MuiTypography-h3 {
+    font-size: 1.8rem !important;
+  }
+  
+  .leaflet-container {
+    height: 300px;
+  }
+}
+
+/* Custom button styles */
+.custom-button {
+  background: linear-gradient(45deg, #1976d2, #42a5f5) !important;
+  color: white !important;
+  border-radius: 25px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.custom-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(25, 118, 210, 0.4) !important;
+}
+
+.custom-button.danger {
+  background: linear-gradient(45deg, #d32f2f, #f44336) !important;
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3) !important;
+}
+
+.custom-button.danger:hover {
+  box-shadow: 0 6px 16px rgba(211, 47, 47, 0.4) !important;
+}
+
+.custom-button.success {
+  background: linear-gradient(45deg, #388e3c, #4caf50) !important;
+  box-shadow: 0 4px 12px rgba(56, 142, 60, 0.3) !important;
+}
+
+.custom-button.success:hover {
+  box-shadow: 0 6px 16px rgba(56, 142, 60, 0.4) !important;
+} 

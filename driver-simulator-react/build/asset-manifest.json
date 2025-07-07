@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/driver-simulator/static/css/main.eab71614.css",
+    "main.js": "/driver-simulator/static/js/main.770e21e0.js",
+    "index.html": "/driver-simulator/index.html",
+    "main.eab71614.css.map": "/driver-simulator/static/css/main.eab71614.css.map",
+    "main.770e21e0.js.map": "/driver-simulator/static/js/main.770e21e0.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.eab71614.css",
+    "static/js/main.770e21e0.js"
+  ]
+}

@@ -1,0 +1,6 @@
+com\taxi\matching\controller\MatchController.class
+com\taxi\matching\MatchingServiceApplication.class
+com\taxi\matching\model\DriverLocation.class
+com\taxi\matching\util\GeohashUtils.class
+com\taxi\matching\consumer\BookingConsumer.class
+com\taxi\matching\service\GeoMatchingService.class
