@@ -1,7 +1,9 @@
 C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\config\KafkaConfig.java
 C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\repository\UserRepository.java
+C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\service\PricingService.java
 C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\controller\MatchController.java
 C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\controller\TestController.java
+C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\util\DistanceCalculator.java
 C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\config\CorsConfig.java
 C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\model\User.java
 C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\controller\BookingController.java
@@ -23,3 +25,4 @@ C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\c
 C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\service\DriverNotificationService.java
 C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\controller\DriverController.java
 C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\websocket\DriverNotificationWebSocketHandler.java
+C:\Users\HP\Desktop\bikerideapp\booking-service\src\main\java\com\taxi\booking\websocket\RiderNotificationWebSocketHandler.java

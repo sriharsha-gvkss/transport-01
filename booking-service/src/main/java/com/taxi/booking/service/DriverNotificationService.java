@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -101,6 +102,30 @@ public class DriverNotificationService {
         } catch (Exception e) {
             log.error("❌ Error getting available drivers", e);
             return List.of();
+        }
+    }
+    
+    /**
+     * Send notification to rider
+     */
+    public void notifyRider(String riderId, Map<String, Object> message) {
+        try {
+            log.info("📱 Sending notification to rider {}: {}", riderId, message.get("type"));
+            
+            var riderNotificationWebSocketHandler = applicationContext.getBean(com.taxi.booking.websocket.RiderNotificationWebSocketHandler.class);
+            
+            // Check if rider is connected
+            if (!riderNotificationWebSocketHandler.isRiderConnected(riderId)) {
+                log.warn("⚠️ Rider {} is not connected to WebSocket - notification will not be delivered", riderId);
+                return;
+            }
+            
+            // Send the notification
+            riderNotificationWebSocketHandler.notifyRider(riderId, message);
+            log.info("✅ Successfully sent notification to rider {}: {}", riderId, message.get("type"));
+            
+        } catch (Exception e) {
+            log.error("❌ Error sending notification to rider {}: {}", riderId, message.get("type"), e);
         }
     }
 } 

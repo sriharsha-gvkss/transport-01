@@ -168,7 +168,6 @@ public class DriverNotificationWebSocketHandler extends TextWebSocketHandler {
     
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        // Remove driver session
         driverSessions.entrySet().removeIf(entry -> entry.getValue().equals(session));
         log.info("Driver WebSocket connection closed: {}", session.getId());
     }

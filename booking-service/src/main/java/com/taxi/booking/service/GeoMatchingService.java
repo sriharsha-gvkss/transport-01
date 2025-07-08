@@ -72,7 +72,6 @@ public class GeoMatchingService {
     
     public void removeDriver(String driverId) {
         driverLocations.remove(driverId);
-        // Remove from all grid cells
         grid.values().forEach(drivers -> 
             drivers.removeIf(driver -> driver.getDriverId().equals(driverId)));
     }

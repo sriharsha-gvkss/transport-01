@@ -30,6 +30,15 @@ public class Booking {
     @Column(nullable = false)
     private String status; // REQUESTED, ACCEPTED, IN_PROGRESS, COMPLETED, CANCELLED
     
+    @Column
+    private String vehicleType; // BIKE, AUTO, CAR
+    
+    @Column
+    private Double distance; // in kilometers
+    
+    @Column
+    private Double price; // calculated price in rupees
+    
     @Column(nullable = false)
     private LocalDateTime createdAt;
     
@@ -107,5 +116,29 @@ public class Booking {
     
     public void setDriverAssignmentStatus(String driverAssignmentStatus) {
         this.driverAssignmentStatus = driverAssignmentStatus;
+    }
+    
+    public String getVehicleType() {
+        return vehicleType;
+    }
+    
+    public void setVehicleType(String vehicleType) {
+        this.vehicleType = vehicleType;
+    }
+    
+    public Double getDistance() {
+        return distance;
+    }
+    
+    public void setDistance(Double distance) {
+        this.distance = distance;
+    }
+    
+    public Double getPrice() {
+        return price;
+    }
+    
+    public void setPrice(Double price) {
+        this.price = price;
     }
 } 

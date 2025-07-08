@@ -10,10 +10,11 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-const MapComponent = ({ currentLocation, locationHistory }) => {
+const MapComponent = ({ currentLocation, locationHistory, driverLocation, showDriverLocation = false }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
+  const driverMarkerRef = useRef(null);
   const pathRef = useRef(null);
 
   useEffect(() => {
@@ -39,6 +40,20 @@ const MapComponent = ({ currentLocation, locationHistory }) => {
         .addTo(mapInstanceRef.current)
         .bindPopup('Driver Location');
 
+      // Create driver marker for rider view
+      if (showDriverLocation) {
+        const driverIconRed = L.divIcon({
+          className: 'driver-marker-red',
+          html: '<div style="background-color: #f44336; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+          iconSize: [20, 20],
+          iconAnchor: [10, 10]
+        });
+
+        driverMarkerRef.current = L.marker([currentLocation.lat, currentLocation.lng], { icon: driverIconRed })
+          .addTo(mapInstanceRef.current)
+          .bindPopup('Driver Location');
+      }
+
       // Create path for location history
       pathRef.current = L.polyline([], { color: '#1976d2', weight: 3, opacity: 0.7 })
         .addTo(mapInstanceRef.current);
@@ -49,18 +64,30 @@ const MapComponent = ({ currentLocation, locationHistory }) => {
       markerRef.current.setLatLng([currentLocation.lat, currentLocation.lng]);
     }
 
+    // Update driver marker position if available
+    if (driverMarkerRef.current && driverLocation) {
+      driverMarkerRef.current.setLatLng([driverLocation.lat, driverLocation.lng]);
+    }
+
     // Update path
     if (pathRef.current && locationHistory.length > 1) {
       const pathCoords = locationHistory.map(loc => [loc.lat, loc.lng]);
       pathRef.current.setLatLngs(pathCoords);
     }
 
-    // Center map on current location
+    // Center map on current location or driver location
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.setView([currentLocation.lat, currentLocation.lng]);
+      if (showDriverLocation && driverLocation) {
+        // Center between user and driver
+        const centerLat = (currentLocation.lat + driverLocation.lat) / 2;
+        const centerLng = (currentLocation.lng + driverLocation.lng) / 2;
+        mapInstanceRef.current.setView([centerLat, centerLng], 14);
+      } else {
+        mapInstanceRef.current.setView([currentLocation.lat, currentLocation.lng]);
+      }
     }
 
-  }, [currentLocation, locationHistory]);
+  }, [currentLocation, locationHistory, driverLocation, showDriverLocation]);
 
   // Cleanup on unmount
   useEffect(() => {
