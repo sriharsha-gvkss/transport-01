@@ -13,6 +13,11 @@ public class DistanceCalculator {
      * @return Distance in kilometers
      */
     public static double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+        // Check if coordinates are the same (or very close)
+        if (Math.abs(lat1 - lat2) < 0.0001 && Math.abs(lng1 - lng2) < 0.0001) {
+            return 0.5; // Return minimum distance of 0.5 km for same location
+        }
+        
         // Convert latitude and longitude from degrees to radians
         double lat1Rad = Math.toRadians(lat1);
         double lng1Rad = Math.toRadians(lng1);
@@ -32,6 +37,9 @@ public class DistanceCalculator {
         
         // Calculate distance
         double distance = EARTH_RADIUS * c;
+        
+        // Ensure minimum distance of 0.5 km for any ride
+        distance = Math.max(0.5, distance);
         
         // Round to 2 decimal places
         return Math.round(distance * 100.0) / 100.0;

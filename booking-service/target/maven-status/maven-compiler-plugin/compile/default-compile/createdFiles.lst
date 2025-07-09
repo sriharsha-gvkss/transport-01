@@ -1,7 +1,6 @@
 com\taxi\booking\model\User$UserRole.class
 com\taxi\booking\service\PricingService.class
 com\taxi\booking\producer\BookingProducer.class
-com\taxi\booking\controller\TestController.class
 com\taxi\booking\model\DriverLocation.class
 com\taxi\booking\repository\BookingRepository.class
 com\taxi\booking\util\DistanceCalculator.class
@@ -10,7 +9,6 @@ com\taxi\booking\BookingServiceApplication.class
 com\taxi\booking\util\GeohashUtils.class
 com\taxi\booking\websocket\DriverLocationWebSocketHandler.class
 com\taxi\booking\model\User.class
-com\taxi\booking\SimpleTestController.class
 com\taxi\booking\model\User$VehicleType.class
 com\taxi\booking\websocket\RiderNotificationWebSocketHandler.class
 com\taxi\booking\controller\DriverController.class
@@ -26,6 +24,7 @@ com\taxi\booking\controller\BookingController.class
 com\taxi\booking\config\CorsConfig.class
 com\taxi\booking\model\User$Status.class
 com\taxi\booking\model\Booking.class
+com\taxi\booking\controller\AdminController.class
 com\taxi\booking\controller\MatchController.class
 com\taxi\booking\service\BookingService.class
 com\taxi\booking\controller\AuthController.class

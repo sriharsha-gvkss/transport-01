@@ -69,8 +69,8 @@ public class BookingController {
                     );
                     booking.setDistance(distance);
                     
-                    // Use BIKE as default vehicle type if not specified
-                    String vehicleType = booking.getVehicleType() != null ? booking.getVehicleType() : "BIKE";
+                    // Use BIKE_1_SEATER as default vehicle type if not specified
+                    String vehicleType = booking.getVehicleType() != null ? booking.getVehicleType() : "BIKE_1_SEATER";
                     booking.setVehicleType(vehicleType);
                     
                     double price = pricingService.calculatePrice(distance, vehicleType);
@@ -384,11 +384,15 @@ public class BookingController {
                 destCoords[0], destCoords[1]
             );
             
+            // Calculate duration based on vehicle type and distance
+            double duration = calculateDurationForVehicle(distance, vehicleType);
+            
             // Calculate price
             double price = pricingService.calculatePrice(distance, vehicleType);
             
             Map<String, Object> response = Map.of(
                 "distance", distance,
+                "duration", duration,
                 "price", price,
                 "vehicleType", vehicleType,
                 "pickupLocation", pickupLocation,
@@ -402,6 +406,37 @@ public class BookingController {
             log.error("Error calculating price", e);
             return ResponseEntity.internalServerError().body(Map.of("error", "Error calculating price"));
         }
+    }
+    
+    /**
+     * Calculate duration for a vehicle type based on distance and traffic conditions
+     */
+    private double calculateDurationForVehicle(double distance, String vehicleType) {
+        // Vehicle speeds in km/h (different speeds for different vehicle types)
+        // These speeds account for traffic conditions in Hyderabad
+        double speed;
+        switch (vehicleType) {
+            case "BIKE_1_SEATER":
+                speed = 28.0; // Bike can navigate traffic better
+                break;
+            case "AUTO_3_SEATER":
+                speed = 22.0; // Auto is slower due to traffic
+                break;
+            case "CAR_4_SEATER":
+                speed = 25.0; // Car baseline speed in city traffic
+                break;
+            case "XUV_7_SEATER":
+                speed = 23.0; // XUV is slightly slower due to size
+                break;
+            default:
+                speed = 25.0; // Default speed
+        }
+        
+        double timeInHours = distance / speed;
+        double timeInMinutes = timeInHours * 60;
+        
+        // Ensure minimum time of 3 minutes for very short distances
+        return Math.max(3.0, Math.round(timeInMinutes));
     }
     
     /**

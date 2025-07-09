@@ -7,30 +7,24 @@ import java.util.HashMap;
 @Service
 public class PricingService {
     
-    // Pricing per km for different vehicle types (Rapido-style pricing)
+    // Pricing per km for different vehicle types (based on real-world rates)
     private static final Map<String, Double> PRICING_PER_KM = new HashMap<>();
     
     static {
-        PRICING_PER_KM.put("BIKE", 7.0); // ₹7/km for bike taxi
-        PRICING_PER_KM.put("SCOOTER", 8.0); // ₹8/km for scooter
-        PRICING_PER_KM.put("MOTORCYCLE", 9.0); // ₹9/km for motorcycle
-        PRICING_PER_KM.put("ELECTRIC_BIKE", 6.0); // ₹6/km for electric bike
-        PRICING_PER_KM.put("ELECTRIC_SCOOTER", 7.0); // ₹7/km for electric scooter
-        PRICING_PER_KM.put("AUTO", 11.0); // ₹11/km for auto
-        PRICING_PER_KM.put("CAR", 18.0); // ₹18/km for car (average of mini to SUV)
+        PRICING_PER_KM.put("BIKE_1_SEATER", 5.5); // ₹5.5/km for bike 1 seater (Rapido-style)
+        PRICING_PER_KM.put("AUTO_3_SEATER", 11.0); // ₹11/km for auto 3 seater (Ola/Uber-style)
+        PRICING_PER_KM.put("CAR_4_SEATER", 14.0); // ₹14/km for car 4 seater (Sedan)
+        PRICING_PER_KM.put("XUV_7_SEATER", 17.5); // ₹17.5/km for XUV 7 seater (SUV/XUV)
     }
     
-    // Base fare for different vehicle types
+    // Base fare for different vehicle types (based on real-world rates)
     private static final Map<String, Double> BASE_FARE = new HashMap<>();
     
     static {
-        BASE_FARE.put("BIKE", 20.0); // ₹20 base fare for bike
-        BASE_FARE.put("SCOOTER", 25.0); // ₹25 base fare for scooter
-        BASE_FARE.put("MOTORCYCLE", 30.0); // ₹30 base fare for motorcycle
-        BASE_FARE.put("ELECTRIC_BIKE", 15.0); // ₹15 base fare for electric bike
-        BASE_FARE.put("ELECTRIC_SCOOTER", 18.0); // ₹18 base fare for electric scooter
-        BASE_FARE.put("AUTO", 30.0); // ₹30 base fare for auto
-        BASE_FARE.put("CAR", 50.0); // ₹50 base fare for car
+        BASE_FARE.put("BIKE_1_SEATER", 20.0); // ₹20 base fare for bike 1 seater
+        BASE_FARE.put("AUTO_3_SEATER", 35.0); // ₹35 base fare for auto 3 seater
+        BASE_FARE.put("CAR_4_SEATER", 65.0); // ₹65 base fare for car 4 seater
+        BASE_FARE.put("XUV_7_SEATER", 90.0); // ₹90 base fare for XUV 7 seater
     }
     
     /**
@@ -78,20 +72,14 @@ public class PricingService {
     
     private String getVehicleDescription(String vehicleType) {
         switch (vehicleType.toUpperCase()) {
-            case "BIKE":
-                return "Bike Taxi - Fast and economical";
-            case "SCOOTER":
-                return "Scooter - Comfortable and stylish";
-            case "MOTORCYCLE":
-                return "Motorcycle - Powerful and fast";
-            case "ELECTRIC_BIKE":
-                return "Electric Bike - Eco-friendly and quiet";
-            case "ELECTRIC_SCOOTER":
-                return "Electric Scooter - Green and efficient";
-            case "AUTO":
-                return "Auto Rickshaw - Comfortable and affordable";
-            case "CAR":
-                return "Car - Premium ride experience";
+            case "BIKE_1_SEATER":
+                return "Bike 1 Seater - Fast and economical";
+            case "AUTO_3_SEATER":
+                return "Auto 3 Seater - Comfortable and affordable";
+            case "CAR_4_SEATER":
+                return "Car 4 Seater - Premium ride experience";
+            case "XUV_7_SEATER":
+                return "XUV 7 Seater - Luxury and spacious";
             default:
                 return "Unknown vehicle type";
         }
